@@ -246,10 +246,16 @@ func convertRow(wg *sync.WaitGroup, ch chan<- PixelChar, img image.Image, y int,
 	max := img.Bounds().Max.X
 	for x := 0; x < max; x++ {
 		// alpha is already applied, so we can just ignore it
-		r, g, b, _ := img.At(x, y).RGBA()
-		i := int(r+g+b) / CharStep
-		if !reverse {
-			i = len(ASCIIChars) - i
+		i := 0
+		r, g, b, a := img.At(x, y).RGBA()
+		if a == 0 {
+			// alpha on max, space character
+			i = len(ASCIIChars) - 1
+		} else {
+			i = int(r+g+b) / CharStep
+			if !reverse {
+				i = len(ASCIIChars) - i
+			}
 		}
 		ch <- PixelChar{
 			char: ASCIIChars[i%len(ASCIIChars)],
