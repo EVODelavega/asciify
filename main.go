@@ -9,6 +9,7 @@ import (
 	"image/png"
 	"math"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 
@@ -19,14 +20,17 @@ type ScaleMode uint32
 
 // Config is basically all the flags so we can check/validate them easily
 type Config struct {
-	w, h           uint
-	fact           float64
-	in, out, iType string
-	mode           ScaleMode
-	overwrite      bool
-	printASCII     bool
-	reverse        bool
-	saveScaled     string
+	w, h       uint
+	fact       float64
+	in, out    string
+	mode       ScaleMode
+	overwrite  bool
+	printASCII bool
+	reverse    bool
+	saveScaled string
+
+	// not flags, but avoid doing the getting extensions a second time
+	inExt, outExt string
 }
 
 type PixelChar struct {
@@ -130,18 +134,26 @@ func (c *Config) Validate() error {
 	} else {
 		c.w, c.h = 0, 0
 	}
-	c.iType = strings.ToLower(c.iType)
-	if _, ok := supportedTypes[c.iType]; !ok {
-		return InvalidInputFormatErr
-	}
 	if c.in == "" || !fileExists(c.in) {
 		return MissingInputFileErr
 	}
+	ext := strings.ToLower(strings.ReplaceAll(filepath.Ext(c.in), ".", ""))
+	if _, ok := supportedTypes[ext]; !ok {
+		return InvalidInputFormatErr
+	}
+	c.inExt = ext
 	if c.out == "" {
 		c.out = "output.txt"
 	}
 	if !c.overwrite && fileExists(c.out) {
 		return OutputFileExistsErr
+	}
+	if len(c.saveScaled) > 0 {
+		ext := strings.ToLower(strings.ReplaceAll(filepath.Ext(c.saveScaled), ".", ""))
+		if _, ok := supportedTypes[ext]; !ok {
+			return InvalidInputFormatErr
+		}
+		c.outExt = ext
 	}
 	return nil
 }
@@ -160,9 +172,8 @@ func main() {
 	flag.Float64Var(&conf.fact, "s", 1.0, "The scaling factor to use instead of width/height float value")
 	flag.StringVar(&conf.in, "f", "", "Input file")
 	flag.StringVar(&conf.out, "o", "", "Output file - default is output.txt")
-	flag.StringVar(&conf.iType, "t", "jpg", "Input format type")
 	flag.StringVar(&scaleFlag, "m", scaleFlag, scaleDoc)
-	flag.BoolVar(&conf.overwrite, "r", false, "Replace output file if exists")
+	flag.BoolVar(&conf.overwrite, "r", false, "ReplaceAll output file if exists")
 	flag.BoolVar(&conf.printASCII, "A", false, "Print image as ASCII chars")
 	flag.BoolVar(&conf.reverse, "n", false, "Make negative of the ASCII output (white <> black)")
 	flag.StringVar(&conf.saveScaled, "c", "", "Save a copy of the scaled image under given file name")
@@ -265,7 +276,7 @@ func getInput(c Config) (image.Image, error) {
 		return nil, err
 	}
 	var src image.Image
-	if c.iType == "png" {
+	if c.inExt == "png" {
 		src, err = png.Decode(inF)
 	} else {
 		src, err = jpeg.Decode(inF)
@@ -295,11 +306,11 @@ func saveScaledImg(c Config, scaled image.Image) error {
 	if c.overwrite && fileExists(c.saveScaled) {
 		os.Remove(c.saveScaled)
 	}
-	output, err := os.Create(saveScaled)
+	output, err := os.Create(c.saveScaled)
 	if err != nil {
 		return err
 	}
-	if c.iType == "png" {
+	if c.outExt == "png" {
 		png.Encode(output, scaled)
 	} else {
 		jpeg.Encode(output, scaled, &jpeg.Options{

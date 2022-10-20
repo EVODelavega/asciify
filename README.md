@@ -24,8 +24,6 @@ The help output details all the flags:
   -r	Replace output file if exists
   -s float
     	The scaling factor to use instead of width/height float value (default 1)
-  -t string
-    	Input format type (default "jpg")
   -w uint
     	The width to resize the image to
   -c string
