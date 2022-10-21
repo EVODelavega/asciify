@@ -25,9 +25,10 @@ type PixelChar struct {
 }
 
 // ImgToASCII converts an image to a string. By default, ligher colours will be represented by smaller characters
-// all the way down to white being shown as a space. pass in true for invert will swap this around, where spaces represent black pixels
+// all the way down to white being shown as a space. pass in true for negative will swap this around, where spaces represent black pixels
 // and vice-versa
-func ImgToASCII(img image.Image, invert bool) string {
+// invert will mirror the image (useful for webcam)
+func ImgToASCII(img image.Image, negative, invert bool) string {
 	max := img.Bounds().Max
 	wg := sync.WaitGroup{}
 	wg.Add(max.Y)
@@ -37,13 +38,17 @@ func ImgToASCII(img image.Image, invert bool) string {
 	// start waiting for data
 	go func() {
 		for pc := range ch {
-			matrix[pc.y][pc.x] = pc.char
+			i := pc.x
+			if invert {
+				i = len(matrix[pc.y]) - i - 1
+			}
+			matrix[pc.y][i] = pc.char
 		}
 		close(done)
 	}()
 	for y := 0; y < max.Y; y++ {
 		matrix[y] = make([]rune, max.X) // initialise each column
-		go convertRow(&wg, ch, img, y, invert)
+		go convertRow(&wg, ch, img, y, negative)
 	}
 	wg.Wait()
 	close(ch)

@@ -4,8 +4,6 @@
 *.dll
 *.so
 *.dylib
-asciify
-asciicam
 
 # Test binary, built with `go test -c`
 *.test
