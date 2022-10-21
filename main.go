@@ -35,7 +35,7 @@ type Config struct {
 
 type PixelChar struct {
 	x, y int
-	char byte
+	char rune
 }
 
 const (
@@ -64,7 +64,7 @@ var (
 
 	// 30 chars -> with RGBA (255 * 4), each character is used for 34 shades
 	// color.Color represents RGBA values as 0-0xFFFF (65,535), so 34 * 257
-	ASCIIChars = []byte("Ñ@#W$9876543210?!abc;:+=-,._ ")
+	ASCIIChars = []rune("Ñ@#W$9876543210?!abc;:+=-,._ ")
 
 	// flag values map onto constants
 	scaleModes = map[string]ScaleMode{
@@ -218,7 +218,7 @@ func imgToASCII(c Config, scaled image.Image) string {
 	wg.Add(max.Y)
 	done := make(chan struct{})             // the routine that will populate the slice  will let us know when it's done with this
 	ch := make(chan PixelChar, max.Y+max.X) // buffer enough for first pixels of each row + 1 column
-	matrix := make([][]byte, max.Y)         // matrix[height][width]
+	matrix := make([][]rune, max.Y)         // matrix[height][width]
 	// start waiting for data
 	go func() {
 		for pc := range ch {
@@ -227,7 +227,7 @@ func imgToASCII(c Config, scaled image.Image) string {
 		close(done)
 	}()
 	for y := 0; y < max.Y; y++ {
-		matrix[y] = make([]byte, max.X) // initialise each column
+		matrix[y] = make([]rune, max.X) // initialise each column
 		go convertRow(&wg, ch, scaled, y, c.reverse)
 	}
 	wg.Wait()
