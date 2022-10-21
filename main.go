@@ -237,7 +237,8 @@ func imgToASCII(c Config, scaled image.Image) string {
 
 	chunks := make([]string, 0, len(matrix))
 	for _, r := range matrix {
-		chunks = append(chunks, string(r))
+		// trim trailing spaces
+		chunks = append(chunks, strings.TrimRight(string(r), " "))
 	}
 	return strings.Join(chunks, "\n")
 }
