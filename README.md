@@ -2,9 +2,9 @@
 
 Convert an image to ASCII character-based string output
 
-## Compile
+## Install
 
-It's pure go, so just run `go build .` and you're good
+It's pure go, so just run `go install .` and you're good to go
 
 ## Run
 
@@ -53,6 +53,16 @@ These commands use a scaling factor, which preserves the aspect ratio of the ori
 asciify -f example/teapot.jpg -w 200 -h 180 -o example/output_wh.txt
 asciify -f example/teapot.jpg -w 200 -h 180 -o example/output_whn.txt -n
 ```
+
+## Multiple files
+
+There's an `asciify_files.sh` script included which passes through all of the flags (except for `-f`). The script has a `-H` flag to display the Usage information, but the gist of it is this:
+
+```bash
+./asciify_files.h -o output_dir img_dir/*.jpg
+```
+
+will ASCIIfy all images in the specified path, and write the output to files in `output_dir`.
 
 ## Credit
 
