@@ -1,12 +1,12 @@
 # ASCIIfy
 
-Convert an image to ASCII character-based string output
+A couple of commands to view images as ASCII. This repository contains 2 commands: `asciify` which allows you to rescale and convert images to ASCII, and `asciicam`, which takes a stream from a video device, and renders the footage as ASCII art in th eterminal.
 
 ## Install
 
-It's pure go, so just run `go install .` and you're good to go
+It's pure go, so just run `go install ./...` and you're good to go
 
-## Run
+## Running ASCIIfy
 
 The help output details all the flags:
 
@@ -54,7 +54,7 @@ asciify -f example/teapot.jpg -w 200 -h 180 -o example/output_wh.txt
 asciify -f example/teapot.jpg -w 200 -h 180 -o example/output_whn.txt -n
 ```
 
-## Multiple files
+### Multiple files
 
 There's an `asciify_files.sh` script included which passes through all of the flags (except for `-f`). The script has a `-H` flag to display the Usage information, but the gist of it is this:
 
@@ -63,6 +63,34 @@ There's an `asciify_files.sh` script included which passes through all of the fl
 ```
 
 will ASCIIfy all images in the specified path, and write the output to files in `output_dir`.
+
+## Running ASCIICam
+
+Again, the command help output should be enough to get started:
+
+```bash
+Usage of asciicam:
+  -d string
+    	Input device (default "/dev/video0")
+  -h uint
+    	ASCII height (number of rows)
+  -n	Inverted output (black <> white)
+  -s float
+    	The scaling factor to use instead of width/height float value (default 1)
+  -w uint
+    	ASCII width (number of columns)
+  -x uint
+    	Input camera resolution (width/X) (default 640)
+  -y uint
+    	Input camera resolution (height/Y) (default 480)
+```
+
+By default, this command will take a 640 by 480 stream from `/dev/video0`, and translate it to ASCII 1-to-1. In between each frame, I'm just calling the `clear` command, whihc is good enough for now (although not on windows).
+I find that the following usually is enough to get decent results:
+
+```
+asciicam -w 160 -h 80
+```
 
 ## Credit
 
