@@ -138,7 +138,7 @@ func main() {
 		os.Exit(1)
 	}
 	// create scaled image string
-	strImg := convert.ImgToASCII(scaled, conf.reverse, false)
+	strImg := convert.ImgToASCIIColoured(scaled, conf.reverse, false)
 	// first, write the scaled copy
 	if err := writeOut(conf, strImg); err != nil {
 		fmt.Println(err)

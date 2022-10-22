@@ -2,9 +2,12 @@
 package convert
 
 import (
+	"fmt"
 	"image"
 	"strings"
 	"sync"
+
+	"github.com/EVODelavega/asciify/colour"
 )
 
 // CharStep
@@ -22,6 +25,50 @@ var ASCIIChars = []rune("Ñ@#W$9876543210?!abc;:+=-,._ ")
 type PixelChar struct {
 	x, y int
 	char rune
+}
+
+type ColourPixelChar struct {
+	PixelChar
+	c *colour.Colour256
+}
+
+// ImgToASCIIColoured does the same as ImgToASCII, only it adds the colour escape codes to each char/pixel
+func ImgToASCIIColoured(img image.Image, negative, invert bool) string {
+	max := img.Bounds().Max
+	wg := sync.WaitGroup{}
+	wg.Add(max.Y)
+	done := make(chan struct{})                   // the routine that will populate the slice  will let us know when it's done with this
+	ch := make(chan ColourPixelChar, max.Y+max.X) // buffer enough for first pixels of each row + 1 column
+	matrix := make([][]string, max.Y)             // matrix[height][width]
+	// start waiting for data
+	go func() {
+		for pc := range ch {
+			i := pc.x
+			if invert {
+				i = len(matrix[pc.y]) - i - 1
+			}
+			// add the esc sequence and rune:
+			// matrix[pc.y][i] = pc.c.TrueEsc() + string(pc.char)
+			matrix[pc.y][i] = fmt.Sprintf("%s%c", pc.c.TrueEsc(), pc.char)
+		}
+		close(done)
+	}()
+	for y := 0; y < max.Y; y++ {
+		matrix[y] = make([]string, max.X) // initialise each column
+		go convertRowColour(&wg, ch, img, y, negative)
+	}
+	wg.Wait()
+	close(ch)
+	<-done
+	// OK, our slice is populated, convert to string:
+	chunks := make([]string, 0, len(matrix))
+	for _, r := range matrix {
+		// reset the colour after each character
+		chunks = append(chunks, strings.Join(r, colour.ResetColour))
+	}
+	delim := colour.ResetColour + "\n"
+	// return entire image as a string, end each line with colour end + new line
+	return strings.Join(chunks, delim)
 }
 
 // ImgToASCII converts an image to a string. By default, ligher colours will be represented by smaller characters
@@ -64,6 +111,38 @@ func ImgToASCII(img image.Image, negative, invert bool) string {
 	}
 	// return entire image as a string
 	return strings.Join(chunks, "\n")
+}
+
+func convertRowColour(wg *sync.WaitGroup, ch chan<- ColourPixelChar, img image.Image, y int, reverse bool) {
+	max := img.Bounds().Max.X
+	cLen := len(ASCIIChars)
+	for x := 0; x < max; x++ {
+		// alpha is already applied, so we can just ignore it
+		i := 0
+		c := img.At(x, y)
+		r, g, b, a := img.At(x, y).RGBA()
+		if a == 0 {
+			// alpha on max, space character
+			i = cLen - 1
+		} else {
+			i = int(float64(r+g+b) / CharStep)
+			if !reverse {
+				i = cLen - i
+			}
+		}
+		pc := PixelChar{
+			char: ASCIIChars[i%cLen],
+			x:    x,
+			y:    y,
+		}
+		// now get the escape code
+		ch <- ColourPixelChar{
+			PixelChar: pc,
+			c:         colour.FromColor(c),
+		}
+
+	}
+	wg.Done()
 }
 
 func convertRow(wg *sync.WaitGroup, ch chan<- PixelChar, img image.Image, y int, reverse bool) {
