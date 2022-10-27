@@ -23,6 +23,7 @@ type Config struct {
 	printASCII bool
 	reverse    bool
 	saveScaled string
+	colour     bool
 
 	// not flags, but avoid doing the getting extensions a second time
 	inExt, outExt string
@@ -117,6 +118,7 @@ func main() {
 	flag.BoolVar(&conf.overwrite, "r", false, "ReplaceAll output file if exists")
 	flag.BoolVar(&conf.printASCII, "A", false, "Print image as ASCII chars")
 	flag.BoolVar(&conf.reverse, "n", false, "Make negative of the ASCII output (white <> black)")
+	flag.BoolVar(&conf.colour, "C", false, "Show image in colour")
 	flag.StringVar(&conf.saveScaled, "c", "", "Save a copy of the scaled image under given file name")
 
 	// get the args
@@ -137,8 +139,13 @@ func main() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+	var strImg string
 	// create scaled image string
-	strImg := convert.ImgToASCIIColoured(scaled, conf.reverse, false)
+	if conf.colour {
+		strImg = convert.ImgToASCIIColoured(scaled, conf.reverse, false)
+	} else {
+		strImg = convert.ImgToASCII(scaled, conf.reverse, false)
+	}
 	// first, write the scaled copy
 	if err := writeOut(conf, strImg); err != nil {
 		fmt.Println(err)

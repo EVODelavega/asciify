@@ -28,6 +28,7 @@ The help output details all the flags:
     	The width to resize the image to
   -c string
     	Save a copy of the scaled image under given file name
+  -C	Show image in colour
 ```
 
 Check the examples directory for an image that was downscaled, and the ASCII output it generated.
@@ -92,6 +93,8 @@ I find that the following usually is enough to get decent results:
 asciicam -w 160 -h 80
 ```
 
+Colour is currently not supported. The way we print colours to screen is just too slow.
+
 ## Running preview
 
 This is probably the simplest of the lot:
@@ -115,15 +118,15 @@ By specifying the max with and height, the image will be scaled to fit the speci
 
 Some examples:
 
-JPEG image of Times Square:
+JPEG image of Times Square. Command: `preview -f tsq.jpg -w 400 -h 110 -S -m cat`
 
 ![previewing Times Square](https://raw.githubusercontent.com/EVODelavega/asciify/main/example/preview_tsq.png)
 
-PNG image (VIM logo with transparent background):
+PNG image (VIM logo with transparent background). Command: `preview -f example/vim.png -w 200 -h 85 -S`
 
 ![VIM logo PNG](https://raw.githubusercontent.com/EVODelavega/asciify/main/example/preview_vim_logo.png)
 
-The vim logo is included in the examples folder. The picture of times square can be found with a simple image search on duckduckgo. I have not included the original, as I don't know who owns the copyright to said image.
+The vim logo is included in the examples folder. The picture of times square can be found with a simple image search on duckduckgo. I have not included the original, as I don't know who owns the copyright to said image. The Times Square image, because of its size, and the high contrast, is best previewed using Catmull-Rom interpolation. The default (nearest neighbout) produces sharper output, but when scaling down images a lot (from 2816x1880 to 400x110), the result often ends up looking less than ideal. Because of the way we print out colours to the terminal, displaying the output often takes longer than scaling/procesing it does.
 
 ## Credit
 
