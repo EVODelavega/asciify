@@ -104,6 +104,53 @@ func File(imgFile string, opts ScaleOpts) (image.Image, error) {
 	return scaled, nil
 }
 
+func FileToWindow(imgFile string, opts ScaleOpts) (image.Image, error) {
+	inF, err := os.Open(imgFile)
+	if err != nil {
+		return nil, err
+	}
+	ext := strings.ToLower(strings.ReplaceAll(filepath.Ext(imgFile), ".", ""))
+	if _, ok := supportedTypes[ext]; !ok {
+		return nil, UnsupportedFileTypeErr
+	}
+	var src image.Image
+	if ext == "png" {
+		src, err = png.Decode(inF)
+	} else {
+		src, err = jpeg.Decode(inF)
+	}
+	inF.Close()
+	// determine factor
+	if opts.Width != 0 && opts.Height != 0 && opts.Factor != 0 {
+		max := src.Bounds().Max
+		useFact := false
+		if uint(max.Y) > opts.Height {
+			hf := float64(opts.Height) / float64(max.Y)
+			if hf < opts.Factor {
+				opts.Factor = hf
+				useFact = true
+			}
+		}
+		if uint(max.X) > opts.Width {
+			hf := float64(opts.Width) / float64(max.X)
+			if hf < opts.Factor {
+				opts.Factor = hf
+				useFact = true
+			}
+		}
+		// true size
+		if opts.Factor > 1.0 {
+			opts.Factor = 1.0
+		}
+		if useFact {
+			opts.Width = 0
+			opts.Height = 0
+		}
+	}
+	scaled := Image(src, opts)
+	return scaled, nil
+}
+
 // Image takes a given image, and returns a scaled version thereof
 func Image(src image.Image, opts ScaleOpts) image.Image {
 	x, y := getScaledXY(opts, src)

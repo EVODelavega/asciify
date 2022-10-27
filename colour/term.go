@@ -17,9 +17,12 @@ type Colour256 struct {
 	R, G, B uint8
 }
 
-// alpha information is lost
+// FromColor returns nil for transparent pixels
 func FromColor(c color.Color) *Colour256 {
-	r, g, b, _ := c.RGBA()
+	r, g, b, a := c.RGBA()
+	if a == 0 {
+		return nil
+	}
 	return &Colour256{
 		R: uint8(r / 256), // yields values between 0 and 255
 		G: uint8(g / 256),
@@ -42,7 +45,7 @@ func FromHex(hex string) (*Colour256, error) {
 
 // TrueEsc returns true-colour escape code
 func (c Colour256) TrueEsc() string {
-	return fmt.Sprintf("\033[38;2;%d;%d;%dm", c.R, c.G, c.B)
+	return fmt.Sprintf("\033[48;2;%d;%d;%dm", c.R, c.G, c.B)
 }
 
 // Hex returns 256 colour as a hex string

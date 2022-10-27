@@ -1,6 +1,6 @@
 # ASCIIfy
 
-A couple of commands to view images as ASCII. This repository contains 2 commands: `asciify` which allows you to rescale and convert images to ASCII, and `asciicam`, which takes a stream from a video device, and renders the footage as ASCII art in th eterminal.
+A couple of commands to view images as ASCII. This repository contains 2 commands: `asciify` which allows you to rescale and convert images to ASCII, and `asciicam`, which takes a stream from a video device, and renders the footage as ASCII art in th eterminal. Because the whole foreground/backround malarkey with coloured ASCII images is a bit fiddly, I also added a simple `previe` command that renders images in colour using just background colours and spaces as pixels.
 
 ## Install
 
@@ -91,6 +91,34 @@ I find that the following usually is enough to get decent results:
 ```
 asciicam -w 160 -h 80
 ```
+
+## Running preview
+
+This is probably the simplest of the lot:
+
+```bash
+Usage of preview:
+  -S	Force width and height to be used as absolute ratio - Ignore s flag
+  -f string
+    	Input file
+  -h uint
+    	Max height - scales image (if required) to fit max height. recalculates -s flag
+  -m string
+    	Choose scaling algorithm (fast & low quality to slow but high quality: near [Nearest Neighbour], approx [Approximate Bilinear], bilinear [Bilinear], cat [CatmullRom]) (default "near")
+  -s float
+    	The scaling factor to use instead of width/height float value (default 1)
+  -w uint
+    	Max width - scales image (if required) to fit max width. recalculates -s flag
+```
+
+By specifying the max with and height, the image will be scaled to fit the specified scale. Using just an -s flag (or no flags at all - default -s == 1), the image will be rendered as-is. If the image fits within the specified width/height, then the scale is kept at 1. By passing in a width and height with the -S flag, the image is rescaled to fit the specified dimensions. This can be useful because line height and character width are usually in a proportion of 2 to 1.
+
+Some examples:
+
+[Previewoing a night-time picture of Times Square (JPEG image)](examples/preview_tsq.png)
+[Showing the VIM logo with transparency (PNG image)](examples/preview_vim_logo.png)
+
+The vim logo is included in the examples folder. The picture of times square can be found with a simple image search on duckduckgo. I have not included the original, as I don't know who owns the copyright to said image.
 
 ## Credit
 
