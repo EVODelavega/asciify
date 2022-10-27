@@ -1,4 +1,4 @@
-// this package takes a colour, and maps it on to the corresponding terminal value
+// Package colour takes a color.Color value, and maps it on to the corresponding terminal value
 package colour
 
 import (
@@ -8,11 +8,14 @@ import (
 )
 
 const (
+	// ResetColour is the terminal code to reset/turn off colour output
 	ResetColour = "\033[0m"
 
 	trueColourF = "\033[38;2;%d;%d;%dm"
 )
 
+// Colour256 contains values for all three (RGB) channels (no alpha)
+// as values ranging from 0 to 255 (0x00 - 0xFF)
 type Colour256 struct {
 	R, G, B uint8
 }
@@ -53,7 +56,7 @@ func (c Colour256) Hex() string {
 	return fmt.Sprintf("0x%02x%02x%02x", c.R, c.G, c.B)
 }
 
-// Uint get the hex value as a single uint value (in 0x000000 to 0xffffff range)
+// UInt get the hex value as a single uint value (in 0x000000 to 0xffffff range)
 func (c Colour256) UInt() uint {
 	r, g, b := uint(c.R), uint(c.G), uint(c.B)
 	return (r << 16) + (g << 8) + b

@@ -12,9 +12,9 @@ import (
 )
 
 var (
-	InvalidInputFormatErr   = errors.New("unsupported input type")
-	MissingInputFileErr     = errors.New("input file not specified or missing")
-	InvalidScalingMethodErr = errors.New("specified scaling mode not supported")
+	ErrInvalidInputFormat   = errors.New("unsupported input type")
+	ErrMissingInputFile     = errors.New("input file not specified or missing")
+	ErrInvalidScalingMethod = errors.New("specified scaling mode not supported")
 
 	// flag values map onto constants
 	scaleModes = map[string]scale.Mode{
@@ -25,13 +25,14 @@ var (
 	}
 )
 
-type CConf struct {
+// Conf just groups the flags together
+type Conf struct {
 	scale.ScaleOpts
 	in    string
 	force bool
 }
 
-func (c *CConf) validate() error {
+func (c *Conf) validate() error {
 	// force no scaling factor if window width/height are set
 	if c.Width != 0 && c.Height != 0 {
 		c.Factor = 1.0
@@ -40,21 +41,21 @@ func (c *CConf) validate() error {
 		}
 	}
 	if c.in == "" || !fileExists(c.in) {
-		return MissingInputFileErr
+		return ErrMissingInputFile
 	}
 	if _, ok := scale.IsSupportedFile(c.in); !ok {
-		return InvalidInputFormatErr
+		return ErrInvalidInputFormat
 	}
 	return nil
 }
 
 func main() {
-	var conf CConf
+	var conf Conf
 	var scaleFlag, scaleDoc string
 	flags := make([]string, 0, len(scale.OrderLHQ))
-	scaleFlag = ScaleModeFlagStr(scale.OrderLHQ[0])
+	scaleFlag = scaleModeFlagStr(scale.OrderLHQ[0])
 	for _, s := range scale.OrderLHQ {
-		flags = append(flags, fmt.Sprintf("%s [%s]", ScaleModeFlagStr(s), s.String()))
+		flags = append(flags, fmt.Sprintf("%s [%s]", scaleModeFlagStr(s), s.String()))
 	}
 	scaleDoc = fmt.Sprintf("Choose scaling algorithm (fast & low quality to slow but high quality: %s)", strings.Join(flags, ", "))
 	flag.UintVar(&conf.Width, "w", 0, "Max width - scales image (if required) to fit max width. recalculates -s flag")
@@ -68,7 +69,7 @@ func main() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	smode, err := ScaleModeFromFalgStr(scaleFlag)
+	smode, err := scaleModeFromFalgStr(scaleFlag)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -83,15 +84,15 @@ func main() {
 	fmt.Println(strImg)
 }
 
-func ScaleModeFromFalgStr(fs string) (scale.Mode, error) {
+func scaleModeFromFalgStr(fs string) (scale.Mode, error) {
 	m, ok := scaleModes[fs]
 	if !ok {
-		return m, InvalidScalingMethodErr
+		return m, ErrInvalidScalingMethod
 	}
 	return m, nil
 }
 
-func ScaleModeFlagStr(s scale.Mode) string {
+func scaleModeFlagStr(s scale.Mode) string {
 	for k, v := range scaleModes {
 		if v == s {
 			return k

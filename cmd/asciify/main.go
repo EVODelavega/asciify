@@ -30,11 +30,11 @@ type Config struct {
 }
 
 var (
-	InvalidDimensionsErr    = errors.New("need valid width/height or factor")
-	InvalidInputFormatErr   = errors.New("unsupported input type")
-	MissingInputFileErr     = errors.New("input file not specified or missing")
-	InvalidScalingMethodErr = errors.New("specified scaling mode not supported")
-	OutputFileExistsErr     = errors.New("output file already exists")
+	ErrInvalidDimensions    = errors.New("need valid width/height or factor")
+	ErrInvalidInputFormat   = errors.New("unsupported input type")
+	ErrMissingInputFile     = errors.New("input file not specified or missing")
+	ErrInvalidScalingMethod = errors.New("specified scaling mode not supported")
+	ErrOutputFileExists     = errors.New("output file already exists")
 
 	// flag values map onto constants
 	scaleModes = map[string]scale.Mode{
@@ -45,15 +45,15 @@ var (
 	}
 )
 
-func ScaleModeFromFalgStr(fs string) (scale.Mode, error) {
+func scaleModeFromFalgStr(fs string) (scale.Mode, error) {
 	m, ok := scaleModes[fs]
 	if !ok {
-		return m, InvalidScalingMethodErr
+		return m, ErrInvalidScalingMethod
 	}
 	return m, nil
 }
 
-func ScaleModeFlagStr(s scale.Mode) string {
+func scaleModeFlagStr(s scale.Mode) string {
 	for k, v := range scaleModes {
 		if v == s {
 			return k
@@ -67,11 +67,11 @@ func (c *Config) Validate() error {
 	if c.Width == 0 && c.Height == 0 {
 		// we need a valid factor
 		if c.Factor <= 0 {
-			return InvalidDimensionsErr
+			return ErrInvalidDimensions
 		}
 	}
 	if c.Factor == 0 && (c.Width == 0 || c.Height == 0) {
-		return InvalidDimensionsErr
+		return ErrInvalidDimensions
 	}
 	// clear whichever dimension values we won't use
 	if c.Width != 0 && c.Height != 0 {
@@ -80,18 +80,18 @@ func (c *Config) Validate() error {
 		c.Width, c.Height = 0, 0
 	}
 	if c.in == "" || !fileExists(c.in) {
-		return MissingInputFileErr
+		return ErrMissingInputFile
 	}
 	ext, ok := scale.IsSupportedFile(c.in)
 	if !ok {
-		return InvalidInputFormatErr
+		return ErrInvalidInputFormat
 	}
 	c.inExt = ext
 	if c.out == "" {
 		c.out = "output.txt"
 	}
 	if !c.overwrite && fileExists(c.out) {
-		return OutputFileExistsErr
+		return ErrOutputFileExists
 	}
 	if len(c.saveScaled) > 0 {
 		// we're going to assume this is an accepted format, it'll write the default (JPEG) anyway
@@ -104,9 +104,9 @@ func main() {
 	conf := Config{}
 	var scaleFlag, scaleDoc string
 	flags := make([]string, 0, len(scale.OrderLHQ))
-	scaleFlag = ScaleModeFlagStr(scale.OrderLHQ[0])
+	scaleFlag = scaleModeFlagStr(scale.OrderLHQ[0])
 	for _, s := range scale.OrderLHQ {
-		flags = append(flags, fmt.Sprintf("%s [%s]", ScaleModeFlagStr(s), s.String()))
+		flags = append(flags, fmt.Sprintf("%s [%s]", scaleModeFlagStr(s), s.String()))
 	}
 	scaleDoc = fmt.Sprintf("Choose scaling algorithm (fast & low quality to slow but high quality: %s)", strings.Join(flags, ", "))
 	flag.UintVar(&conf.Width, "w", 0, "The width to resize the image to")
@@ -123,7 +123,7 @@ func main() {
 
 	// get the args
 	flag.Parse()
-	smode, err := ScaleModeFromFalgStr(scaleFlag)
+	smode, err := scaleModeFromFalgStr(scaleFlag)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)

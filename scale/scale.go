@@ -55,10 +55,10 @@ var (
 		"jpg":  {},
 	}
 
-	UnsupportedFileTypeErr = errors.New("file extension not supported")
+	ErrUnsupportedFileType = errors.New("file extension not supported")
 )
 
-// IsSupportedExt pass in the extension, or path, and this will return the extension + true if the
+// IsSupportedFile pass in the path, and this will return the extension + true if the
 // extension is supported - false if not supported
 func IsSupportedFile(path string) (string, bool) {
 	ext := strings.ToLower(strings.ReplaceAll(filepath.Ext(path), ".", ""))
@@ -86,7 +86,7 @@ func File(imgFile string, opts ScaleOpts) (image.Image, error) {
 	}
 	ext := strings.ToLower(strings.ReplaceAll(filepath.Ext(imgFile), ".", ""))
 	if _, ok := supportedTypes[ext]; !ok {
-		return nil, UnsupportedFileTypeErr
+		return nil, ErrUnsupportedFileType
 	}
 	var src image.Image
 	if ext == "png" {
@@ -104,6 +104,8 @@ func File(imgFile string, opts ScaleOpts) (image.Image, error) {
 	return scaled, nil
 }
 
+// FileToWindow does exactly what the File function does, but recalculates the scaling factor based
+// on width and height, which are interpreted as the width/height that can be used to view the image
 func FileToWindow(imgFile string, opts ScaleOpts) (image.Image, error) {
 	inF, err := os.Open(imgFile)
 	if err != nil {
@@ -111,7 +113,7 @@ func FileToWindow(imgFile string, opts ScaleOpts) (image.Image, error) {
 	}
 	ext := strings.ToLower(strings.ReplaceAll(filepath.Ext(imgFile), ".", ""))
 	if _, ok := supportedTypes[ext]; !ok {
-		return nil, UnsupportedFileTypeErr
+		return nil, ErrUnsupportedFileType
 	}
 	var src image.Image
 	if ext == "png" {

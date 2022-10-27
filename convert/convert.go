@@ -1,4 +1,4 @@
-// this package takes an image as input, and coverts it to an ASCII string
+// Package convert takes an image as input, and coverts it to an ASCII string
 package convert
 
 import (
@@ -28,11 +28,14 @@ type PixelChar struct {
 	char rune
 }
 
+// ColourPixelChar is a pixel-to-char struct width added colour information
 type ColourPixelChar struct {
 	PixelChar
 	c *colour.Colour256
 }
 
+// ImgToPreview skips the whole "to ASCII" part of the conversion, just uses a space for pixels
+// and sets the background colour to match the image, so we can print the image in true colour
 func ImgToPreview(img image.Image) string {
 	max := img.Bounds().Max
 	wg := sync.WaitGroup{}
