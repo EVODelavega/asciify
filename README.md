@@ -115,8 +115,13 @@ By specifying the max with and height, the image will be scaled to fit the speci
 
 Some examples:
 
-[Previewoing a night-time picture of Times Square (JPEG image)](examples/preview_tsq.png)
-[Showing the VIM logo with transparency (PNG image)](examples/preview_vim_logo.png)
+JPEG image of Times Square:
+
+![previewing Times Square](https://raw.githubusercontent.com/EVODelavega/asciify/main/example/preview_tsq.png)
+
+PNG image (VIM logo with transparent background):
+
+![VIM logo PNG](https://raw.githubusercontent.com/EVODelavega/asciify/main/example/preview_vim_logo.png)
 
 The vim logo is included in the examples folder. The picture of times square can be found with a simple image search on duckduckgo. I have not included the original, as I don't know who owns the copyright to said image.
 
