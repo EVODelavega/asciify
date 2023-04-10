@@ -80,7 +80,7 @@ func main() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	strImg := convert.ImgToPreview(scaled)
+	strImg := convert.ImgToPreview(scaled, conf.force)
 	fmt.Println(strImg)
 }
 

@@ -20,7 +20,13 @@ const CharStep = float64((65535.0 * 3.0) / 29.0)
 
 // ASCIIChars characters we'll use to build up or image
 var ASCIIChars = []rune("Ñ@#W$9876543210?!abc;:+=-,._ ")
-var emptyChar = "%s "
+
+// emptyChar is used with normal scaling (accounts for height and width of characters being different)
+var emptyChar = "%s   "
+
+// emptySingleChar is used when previewing with fixed width/height. This assumes the dimensions are accounting for the
+// stretch caused by character width/height (or monospace font)
+var emptySingleChar = "%s "
 
 // PixelChar the character for a given pixel in the image
 type PixelChar struct {
@@ -36,23 +42,29 @@ type ColourPixelChar struct {
 
 // ImgToPreview skips the whole "to ASCII" part of the conversion, just uses a space for pixels
 // and sets the background colour to match the image, so we can print the image in true colour
-func ImgToPreview(img image.Image) string {
+// if true is passed for the single argument, a single space represents a pixel, otherwise we use
+// three spaces to account for character width/height being 1:3 ratio
+func ImgToPreview(img image.Image, single bool) string {
 	max := img.Bounds().Max
 	wg := sync.WaitGroup{}
 	wg.Add(max.Y)
 	done := make(chan struct{})                   // the routine that will populate the slice  will let us know when it's done with this
 	ch := make(chan ColourPixelChar, max.Y+max.X) // buffer enough for first pixels of each row + 1 column
 	matrix := make([][]string, max.Y)             // matrix[height][width]
+	format := emptyChar
+	if single {
+		format = emptySingleChar
+	}
 	// start waiting for data
 	go func() {
 		for pc := range ch {
 			// add the esc sequence and rune:
 			// matrix[pc.y][i] = pc.c.TrueEsc() + string(pc.char)
-			if pc.c == nil {
-				matrix[pc.y][pc.x] = " " // just a space, no colour
-			} else {
-				matrix[pc.y][pc.x] = fmt.Sprintf(emptyChar, pc.c.TrueEsc()) // coloured space
+			var cEsc string
+			if pc.c != nil {
+				cEsc = pc.c.TrueEsc()
 			}
+			matrix[pc.y][pc.x] = fmt.Sprintf(format, cEsc) // coloured space
 		}
 		close(done)
 	}()
@@ -91,7 +103,11 @@ func ImgToASCIIColoured(img image.Image, negative, invert bool) string {
 			}
 			// add the esc sequence and rune:
 			// matrix[pc.y][i] = pc.c.TrueEsc() + string(pc.char)
-			matrix[pc.y][i] = fmt.Sprintf("%s%c", pc.c.TrueEsc(), pc.char)
+			te := ""
+			if pc.c != nil {
+				te = pc.c.TrueEsc()
+			}
+			matrix[pc.y][i] = fmt.Sprintf("%s%c", te, pc.char)
 		}
 		close(done)
 	}()
