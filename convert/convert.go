@@ -122,11 +122,10 @@ func ImgToASCIIColoured(img image.Image, negative, invert bool) string {
 	chunks := make([]string, 0, len(matrix))
 	for _, r := range matrix {
 		// reset the colour after each character
-		chunks = append(chunks, strings.Join(r, colour.ResetColour))
+		chunks = append(chunks, strings.Join(r, ""))
 	}
-	delim := colour.ResetColour + "\n"
 	// return entire image as a string, end each line with colour end + new line
-	return strings.Join(chunks, delim)
+	return strings.Join(chunks, "\n") + colour.ResetColour
 }
 
 // ImgToASCII converts an image to a string. By default, ligher colours will be represented by smaller characters

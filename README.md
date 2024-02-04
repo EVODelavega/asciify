@@ -126,8 +126,11 @@ PNG image (VIM logo with transparent background). Command: `preview -f example/v
 
 ![VIM logo PNG](https://raw.githubusercontent.com/EVODelavega/asciify/main/example/preview_vim_logo.png)
 
+The banana preview image uses shell escape codes for the colour. To see the output, use `cat examples/banana.out`, or run `preview -f examples/banana.jpg -f 0.4`.
+
 The vim logo is included in the examples folder. The picture of times square can be found with a simple image search on duckduckgo. I have not included the original, as I don't know who owns the copyright to said image. The Times Square image, because of its size, and the high contrast, is best previewed using Catmull-Rom interpolation. The default (nearest neighbout) produces sharper output, but when scaling down images a lot (from 2816x1880 to 400x110), the result often ends up looking less than ideal. Because of the way we print out colours to the terminal, displaying the output often takes longer than scaling/procesing it does.
 
 ## Credit
 
-The image used in the example directory is a royalty-free image from [The Graphics Fairy](https://thegraphicsfairy.com)
+The image of Times Square used in the example directory is a royalty-free image from [The Graphics Fairy](https://thegraphicsfairy.com)
+The image of the banana was taken from a free stock photo website called [School Photo Project](https://www.schoolphotoproject.com/fruits/fresh-banana-photo2.html)
